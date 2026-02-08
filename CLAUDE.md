@@ -9,8 +9,7 @@ Type-based structure.
 
 - `index.html`: page entry point
 - `src`: source directory
-  - `hook`: React hook definition.
-  - `tests`: Tests
+  - `hooks`: React hooks
   - `main.ts`: JavaScript entry point. DO NOT EDIT.
   - `App.tsx`: JavaScript entry point
   - `index.css`: CSS entry point
@@ -25,6 +24,12 @@ Type-based structure.
 ## Key Principles
 
 - Keep components to have only one responsibility.
+- One component per one file.
 - Extract logics into hooks.
 - Split files if they are longer than 300 lines.
 - Use t-wada's TDD. Write tests first.
+- Split plans into atomic smaller steps. Each steps corresponds to one commits.
+
+## Git
+
+- Use conventional commits.
