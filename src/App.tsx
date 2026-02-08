@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
-import { CodeSelect } from "./component/CodeSelect";
-import { Result } from "./component/Result";
-import { TypingGame } from "./component/TypingGame";
+import { CodeSelect } from "./components/CodeSelect";
+import { Result } from "./components/Result";
+import { TypingGame } from "./components/TypingGame";
 import { type CodeSample, codeSamples } from "./data/codes";
-import type { TypingResult } from "./hook/useTypingGame";
+import type { TypingResult } from "./hooks/useTypingGame";
 
 type Screen =
 	| { readonly type: "select" }

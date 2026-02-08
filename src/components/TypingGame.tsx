@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { CodeSample } from "../data/codes";
-import { type TypingResult, useTypingGame } from "../hook/useTypingGame";
+import { type TypingResult, useTypingGame } from "../hooks/useTypingGame";
 
 interface TypingGameProps {
 	readonly sample: CodeSample;

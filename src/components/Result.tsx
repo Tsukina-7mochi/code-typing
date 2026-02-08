@@ -1,4 +1,5 @@
-import type { TypingResult } from "../hook/useTypingGame";
+import type { TypingResult } from "../hooks/useTypingGame";
+import { Stat } from "./Stat";
 
 interface ResultProps {
 	readonly result: TypingResult;
@@ -37,21 +38,6 @@ export function Result({ result, language, onRetry, onBack }: ResultProps) {
 					Back to Select
 				</button>
 			</div>
-		</div>
-	);
-}
-
-function Stat({
-	label,
-	value,
-}: {
-	readonly label: string;
-	readonly value: string;
-}) {
-	return (
-		<div className="rounded-lg bg-gray-800 p-4 text-center">
-			<div className="text-2xl font-bold text-white">{value}</div>
-			<div className="text-sm text-gray-400">{label}</div>
 		</div>
 	);
 }

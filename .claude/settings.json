@@ -5,6 +5,7 @@
       "Bash(pnpm check-write)",
       "Bash(pnpm build)",
       "Bash(pnpm test:*)",
+      "Bash(pnpm knip:*)",
       "Bash(git commit:*)",
       "Bash(git diff:*)",
       "Bash(git status:*)",

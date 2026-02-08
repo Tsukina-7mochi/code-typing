@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { IGNORED_KEYS } from "../constants/keys";
 
 export interface TypingResult {
 	readonly elapsedTime: number;
@@ -14,37 +15,6 @@ interface TypingState {
 	readonly backspaceCount: number;
 	readonly totalKeystrokes: number;
 }
-
-const IGNORED_KEYS = new Set([
-	"Shift",
-	"Control",
-	"Alt",
-	"Meta",
-	"CapsLock",
-	"Escape",
-	"ArrowUp",
-	"ArrowDown",
-	"ArrowLeft",
-	"ArrowRight",
-	"Home",
-	"End",
-	"PageUp",
-	"PageDown",
-	"Insert",
-	"Delete",
-	"F1",
-	"F2",
-	"F3",
-	"F4",
-	"F5",
-	"F6",
-	"F7",
-	"F8",
-	"F9",
-	"F10",
-	"F11",
-	"F12",
-]);
 
 const initialState: TypingState = {
 	typed: [],

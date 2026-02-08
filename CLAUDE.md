@@ -20,6 +20,8 @@ Type-based structure.
 - `pnpm build`: Build project
 - `pnpm check`: Run Biome
 - `pnpm check-write`: Run Biome and auto-fix if possible
+- `pnpm test`: Run Vitest
+- `pnpm knip`: Run Knip to search unused dependencies
 
 ## Key Principles
 
