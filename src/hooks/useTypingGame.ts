@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { IGNORED_KEYS } from "../constants/keys";
 
 export interface TypingResult {
 	readonly elapsedTime: number;
@@ -44,8 +43,6 @@ export function useTypingGame(code: string) {
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
 			const { key } = event;
-
-			if (IGNORED_KEYS.has(key)) return;
 
 			const isTypableKey =
 				key === "Backspace" ||
