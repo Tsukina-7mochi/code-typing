@@ -5,7 +5,7 @@ import { useTypingState } from "./useTypingState";
 describe("useTypingState", () => {
 	it("starts with empty state", () => {
 		const { result } = renderHook(() => useTypingState("abc"));
-		expect(result.current.typed).toEqual([]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(0);
 		expect(result.current.isComplete).toBe(false);
 		expect(result.current.result).toBeNull();
@@ -14,15 +14,31 @@ describe("useTypingState", () => {
 	it("handleKey advances position", () => {
 		const { result } = renderHook(() => useTypingState("abc"));
 		act(() => result.current.handleKey("a"));
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 	});
 
 	it("handleKey accepts wrong characters", () => {
 		const { result } = renderHook(() => useTypingState("abc"));
 		act(() => result.current.handleKey("x"));
-		expect(result.current.typed).toEqual(["x"]);
-		expect(result.current.currentIndex).toBe(1);
+		expect(result.current.errorInput).toBe("x");
+		expect(result.current.currentIndex).toBe(0);
+	});
+
+	it("appends error input when already in error state", () => {
+		const { result } = renderHook(() => useTypingState("abc"));
+		act(() => result.current.handleKey("x"));
+		act(() => result.current.handleKey("y"));
+		expect(result.current.errorInput).toBe("xy");
+		expect(result.current.currentIndex).toBe(0);
+	});
+
+	it("Backspace removes error input before moving index", () => {
+		const { result } = renderHook(() => useTypingState("abc"));
+		act(() => result.current.handleKey("x"));
+		act(() => result.current.handleKey("Backspace"));
+		expect(result.current.errorInput).toBe("");
+		expect(result.current.currentIndex).toBe(0);
 	});
 
 	it("Backspace removes last character", () => {
@@ -30,14 +46,14 @@ describe("useTypingState", () => {
 		act(() => result.current.handleKey("a"));
 		act(() => result.current.handleKey("b"));
 		act(() => result.current.handleKey("Backspace"));
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 	});
 
 	it("Backspace does nothing when nothing is typed", () => {
 		const { result } = renderHook(() => useTypingState("abc"));
 		act(() => result.current.handleKey("Backspace"));
-		expect(result.current.typed).toEqual([]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(0);
 	});
 
@@ -110,7 +126,7 @@ describe("useTypingState", () => {
 		act(() => result.current.handleKey("a"));
 		expect(result.current.isComplete).toBe(true);
 		act(() => result.current.handleKey("b"));
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 		vi.restoreAllMocks();
 	});

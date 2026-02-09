@@ -7,23 +7,8 @@ interface TypingGameProps {
 	readonly onComplete: (result: TypingResult) => void;
 }
 
-function charToDisplay(key: string): string {
-	if (key === "Enter") return "\n";
-	if (key === "Tab") return "\t";
-	return key;
-}
-
-function getTypedCharProps(typedKey: string, expectedChar: string) {
-	const typedChar = charToDisplay(typedKey);
-	const isCorrect = typedChar === expectedChar;
-	return {
-		className: isCorrect ? "text-white" : "text-red-400 bg-red-900/30",
-		displayChar: isCorrect ? expectedChar : typedChar,
-	};
-}
-
 export function TypingGame({ sample, onComplete }: TypingGameProps) {
-	const { typed, currentIndex, isComplete, result } = useTypingGame(
+	const { errorInput, currentIndex, isComplete, result } = useTypingGame(
 		sample.code,
 	);
 	const cursorRef = useRef<HTMLSpanElement>(null);
@@ -49,9 +34,10 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 				container.scrollTop + cursorRelativeTop - containerRect.height / 2;
 			container.scrollTo({ top: targetScroll, behavior: "smooth" });
 		}
-	}, [typed.length]);
+	}, [currentIndex, errorInput.length]);
 
-	const chars = sample.code.split("");
+	const correctText = sample.code.slice(0, currentIndex);
+	const remainingText = sample.code.slice(currentIndex);
 
 	return (
 		<div className="flex min-h-screen w-full flex-col items-center justify-center p-8">
@@ -61,35 +47,21 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 				className="relative max-h-[70vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-gray-900 p-6"
 			>
 				<pre className="font-mono text-lg leading-relaxed whitespace-pre-wrap break-all">
-					{chars.map((expectedChar, i) => {
-						const isCurrent = i === currentIndex;
-						const isTyped = i < typed.length;
-
-						const { className, displayChar } = isTyped
-							? getTypedCharProps(typed[i], expectedChar)
-							: { className: "text-gray-600", displayChar: expectedChar };
-
-						return (
-							// biome-ignore lint/suspicious/noArrayIndexKey: chars are from a fixed string, index is the stable identity
-							<span key={i} className={className}>
-								{isCurrent && !isComplete ? (
-									<>
-										<span
-											ref={cursorRef}
-											className="animate-pulse border-l-2 border-indigo-400"
-										/>
-										{displayChar}
-									</>
-								) : (
-									displayChar
-								)}
-							</span>
-						);
-					})}
+					<span className="text-white">{correctText}</span>
+					{errorInput.length > 0 ? (
+						<span className="text-red-400 bg-red-900/30">{errorInput}</span>
+					) : null}
+					{!isComplete ? (
+						<span
+							ref={cursorRef}
+							className="animate-pulse border-l-2 border-indigo-400"
+						/>
+					) : null}
+					<span className="text-gray-600">{remainingText}</span>
 				</pre>
 			</div>
 			<div className="mt-4 text-sm text-gray-500">
-				{currentIndex} / {chars.length} characters
+				{currentIndex} / {sample.code.length} characters
 			</div>
 		</div>
 	);

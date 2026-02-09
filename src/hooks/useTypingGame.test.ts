@@ -11,7 +11,7 @@ function pressKey(key: string) {
 describe("useTypingGame", () => {
 	it("starts with empty state", () => {
 		const { result } = renderHook(() => useTypingGame("abc"));
-		expect(result.current.typed).toEqual([]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(0);
 		expect(result.current.isComplete).toBe(false);
 		expect(result.current.result).toBeNull();
@@ -20,31 +20,30 @@ describe("useTypingGame", () => {
 	it("typing correct characters advances position", () => {
 		const { result } = renderHook(() => useTypingGame("abc"));
 		pressKey("a");
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 	});
 
-	it("typing wrong characters still advances position", () => {
+	it("typing wrong characters enters error state", () => {
 		const { result } = renderHook(() => useTypingGame("abc"));
 		pressKey("x");
-		expect(result.current.typed).toEqual(["x"]);
-		expect(result.current.currentIndex).toBe(1);
+		expect(result.current.errorInput).toBe("x");
+		expect(result.current.currentIndex).toBe(0);
 	});
 
 	it("backspace removes last character", () => {
 		const { result } = renderHook(() => useTypingGame("abc"));
 		pressKey("a");
 		pressKey("b");
-		expect(result.current.typed).toEqual(["a", "b"]);
 		pressKey("Backspace");
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 	});
 
 	it("backspace does nothing when nothing is typed", () => {
 		const { result } = renderHook(() => useTypingGame("abc"));
 		pressKey("Backspace");
-		expect(result.current.typed).toEqual([]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(0);
 	});
 
@@ -117,7 +116,7 @@ describe("useTypingGame", () => {
 		pressKey("a");
 		expect(result.current.isComplete).toBe(true);
 		pressKey("b");
-		expect(result.current.typed).toEqual(["a"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(1);
 		vi.restoreAllMocks();
 	});
@@ -130,7 +129,7 @@ describe("useTypingGame", () => {
 		pressKey("Meta");
 		pressKey("Escape");
 		pressKey("ArrowLeft");
-		expect(result.current.typed).toEqual([]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(0);
 	});
 
@@ -138,7 +137,7 @@ describe("useTypingGame", () => {
 		const { result } = renderHook(() => useTypingGame("a\nb"));
 		pressKey("a");
 		pressKey("Enter");
-		expect(result.current.typed).toEqual(["a", "Enter"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(2);
 	});
 
@@ -146,7 +145,7 @@ describe("useTypingGame", () => {
 		const { result } = renderHook(() => useTypingGame("a\tb"));
 		pressKey("a");
 		pressKey("Tab");
-		expect(result.current.typed).toEqual(["a", "Tab"]);
+		expect(result.current.errorInput).toBe("");
 		expect(result.current.currentIndex).toBe(2);
 	});
 

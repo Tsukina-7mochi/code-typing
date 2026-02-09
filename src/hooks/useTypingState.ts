@@ -8,7 +8,8 @@ export interface TypingResult {
 }
 
 interface TypingState {
-	readonly typed: readonly string[];
+	readonly currentIndex: number;
+	readonly errorInput: string;
 	readonly startTime: number | null;
 	readonly endTime: number | null;
 	readonly backspaceCount: number;
@@ -16,18 +17,25 @@ interface TypingState {
 }
 
 const initialState: TypingState = {
-	typed: [],
+	currentIndex: 0,
+	errorInput: "",
 	startTime: null,
 	endTime: null,
 	backspaceCount: 0,
 	totalKeystrokes: 0,
 };
 
+function keyToChar(key: string): string {
+	if (key === "Enter") return "\n";
+	if (key === "Tab") return "\t";
+	return key;
+}
+
 export function useTypingState(code: string) {
 	const [state, setState] = useState<TypingState>(initialState);
 
-	const currentIndex = state.typed.length;
-	const isComplete = state.typed.length === code.length;
+	const currentIndex = state.currentIndex;
+	const isComplete = state.currentIndex === code.length;
 
 	const result: TypingResult | null =
 		isComplete && state.startTime !== null && state.endTime !== null
@@ -43,26 +51,55 @@ export function useTypingState(code: string) {
 	const handleKey = useCallback(
 		(key: string) => {
 			setState((prev) => {
-				if (prev.typed.length === code.length) return prev;
+				if (prev.currentIndex === code.length) return prev;
 
 				if (key === "Backspace") {
-					if (prev.typed.length === 0) return prev;
+					if (prev.errorInput.length > 0) {
+						return {
+							...prev,
+							errorInput: prev.errorInput.slice(0, -1),
+							backspaceCount: prev.backspaceCount + 1,
+						};
+					}
+
+					if (prev.currentIndex === 0) return prev;
+
 					return {
 						...prev,
-						typed: prev.typed.slice(0, -1),
+						currentIndex: prev.currentIndex - 1,
 						backspaceCount: prev.backspaceCount + 1,
 					};
 				}
 
 				const now = Date.now();
-				const newTyped = [...prev.typed, key];
-				const isNowComplete = newTyped.length === code.length;
+				const typedChar = keyToChar(key);
+
+				if (prev.errorInput.length > 0) {
+					return {
+						...prev,
+						errorInput: prev.errorInput + typedChar,
+						startTime: prev.startTime ?? now,
+						totalKeystrokes: prev.totalKeystrokes + 1,
+					};
+				}
+
+				const expectedChar = code[prev.currentIndex] ?? "";
+				if (typedChar === expectedChar) {
+					const newIndex = prev.currentIndex + 1;
+					const isNowComplete = newIndex === code.length;
+					return {
+						...prev,
+						currentIndex: newIndex,
+						startTime: prev.startTime ?? now,
+						endTime: isNowComplete ? now : prev.endTime,
+						totalKeystrokes: prev.totalKeystrokes + 1,
+					};
+				}
 
 				return {
 					...prev,
-					typed: newTyped,
+					errorInput: typedChar,
 					startTime: prev.startTime ?? now,
-					endTime: isNowComplete ? now : prev.endTime,
 					totalKeystrokes: prev.totalKeystrokes + 1,
 				};
 			});
@@ -71,7 +108,7 @@ export function useTypingState(code: string) {
 	);
 
 	return {
-		typed: state.typed,
+		errorInput: state.errorInput,
 		startTime: state.startTime,
 		currentIndex,
 		isComplete,
