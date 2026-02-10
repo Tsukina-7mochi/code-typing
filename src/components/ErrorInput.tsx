@@ -33,6 +33,6 @@ export function ErrorInput({ errorInput }: ErrorInputProps) {
 	);
 
 	return (
-		<span className="text-red-400 bg-red-900/30">{renderedErrorInput}</span>
+		<span className="text-zen-error bg-zen-error-bg">{renderedErrorInput}</span>
 	);
 }

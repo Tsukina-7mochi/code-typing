@@ -13,7 +13,7 @@ export function LanguageSelect({ languages, onSelect }: LanguageSelectProps) {
 					key={lang.id}
 					type="button"
 					onClick={() => onSelect(lang)}
-					className="cursor-pointer rounded-lg border border-gray-700 bg-gray-800 p-4 text-center font-medium text-white transition-colors hover:border-indigo-500 hover:bg-gray-750"
+					className="cursor-pointer rounded-md bg-zen-surface p-4 text-center font-medium text-zen-text transition-all duration-300 hover:bg-zen-surface-hover"
 				>
 					{lang.name}
 				</button>

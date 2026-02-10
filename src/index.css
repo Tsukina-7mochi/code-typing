@@ -1,15 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap");
 @import "tailwindcss";
 
+@theme {
+	/* Fonts */
+	--font-sans: "Inter", system-ui, sans-serif;
+	--font-code: "JetBrains Mono", ui-monospace, monospace;
+
+	/* Zen palette */
+	--color-zen-bg: #0e0e10;
+	--color-zen-surface: rgba(255, 255, 255, 0.03);
+	--color-zen-surface-hover: rgba(255, 255, 255, 0.06);
+	--color-zen-border: rgba(255, 255, 255, 0.06);
+	--color-zen-text: rgba(255, 255, 255, 0.85);
+	--color-zen-text-muted: rgba(255, 255, 255, 0.4);
+	--color-zen-text-faint: rgba(255, 255, 255, 0.2);
+
+	/* Accent */
+	--color-zen-accent: oklch(0.75 0.12 185);
+	--color-zen-accent-dim: oklch(0.55 0.1 185);
+	--color-zen-accent-hover: oklch(0.8 0.12 185);
+
+	/* Error */
+	--color-zen-error: oklch(0.75 0.12 20);
+	--color-zen-error-bg: rgba(220, 80, 80, 0.08);
+
+	/* Custom cursor animation */
+	--animate-blink: blink 1.2s ease-in-out infinite;
+	@keyframes blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.3;
+		}
+	}
+}
+
 :root {
-	font-family:
-		ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
-		monospace;
+	font-family: var(--font-sans);
 	line-height: 1.5;
 	font-weight: 400;
 
 	color-scheme: dark;
-	color: rgba(255, 255, 255, 0.87);
-	background-color: #0f0f0f;
+	color: var(--color-zen-text);
+	background-color: var(--color-zen-bg);
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;

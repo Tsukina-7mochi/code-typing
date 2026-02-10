@@ -46,24 +46,24 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 
 	return (
 		<div className="flex min-h-screen w-full flex-col items-center justify-center p-8">
-			<div className="mb-4 text-sm text-gray-400">{sample.language}</div>
+			<div className="mb-4 text-sm text-zen-text-muted">{sample.language}</div>
 			<div
 				ref={containerRef}
-				className="relative max-h-[70vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-gray-900 p-6"
+				className="relative max-h-[70vh] min-w-[80ch] max-w-[120ch] overflow-y-auto rounded-md bg-zen-surface p-6"
 			>
-				<pre className="font-mono text-lg leading-relaxed whitespace-pre-wrap break-all">
-					<span className="text-white">{correctText}</span>
+				<pre className="font-code text-lg leading-relaxed whitespace-pre-wrap break-all">
+					<span className="text-zen-text">{correctText}</span>
 					<ErrorInput errorInput={errorInput} />
 					{!isComplete ? (
 						<span
 							ref={cursorRef}
-							className="animate-pulse border-l-2 border-indigo-400"
+							className="animate-blink border-l-2 border-zen-accent"
 						/>
 					) : null}
-					<span className="text-gray-600">{remainingText}</span>
+					<span className="text-zen-text-faint">{remainingText}</span>
 				</pre>
 			</div>
-			<div className="mt-4 text-sm text-gray-500">
+			<div className="mt-4 text-sm text-zen-text-muted">
 				{currentIndex} / {sample.code.length} characters
 			</div>
 		</div>
