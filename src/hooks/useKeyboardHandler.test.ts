@@ -8,6 +8,15 @@ function pressKey(key: string) {
 	});
 }
 
+function pressKeyWithModifiers(
+	key: string,
+	modifiers: Pick<KeyboardEventInit, "ctrlKey" | "altKey" | "metaKey">,
+) {
+	act(() => {
+		window.dispatchEvent(new KeyboardEvent("keydown", { key, ...modifiers }));
+	});
+}
+
 describe("useKeyboardHandler", () => {
 	it("calls onKey for single character keys", () => {
 		const onKey = vi.fn();
@@ -46,6 +55,15 @@ describe("useKeyboardHandler", () => {
 		pressKey("Meta");
 		pressKey("Escape");
 		pressKey("ArrowLeft");
+		expect(onKey).not.toHaveBeenCalled();
+	});
+
+	it("ignores typable keys when ctrl, alt, or meta is pressed", () => {
+		const onKey = vi.fn();
+		renderHook(() => useKeyboardHandler(onKey));
+		pressKeyWithModifiers("r", { ctrlKey: true });
+		pressKeyWithModifiers("r", { altKey: true });
+		pressKeyWithModifiers("r", { metaKey: true });
 		expect(onKey).not.toHaveBeenCalled();
 	});
 

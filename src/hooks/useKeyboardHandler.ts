@@ -9,6 +9,7 @@ function isTypableKey(key: string): boolean {
 export function useKeyboardHandler(onKey: (key: string) => void) {
 	useEffect(() => {
 		const handler = (event: KeyboardEvent) => {
+			if (event.ctrlKey || event.altKey || event.metaKey) return;
 			if (!isTypableKey(event.key)) return;
 			event.preventDefault();
 			onKey(event.key);
