@@ -281,6 +281,8 @@ describe("fetchRandomCode", () => {
 		name: "TypeScript",
 		githubQuery: "typescript",
 		extensions: [".ts", ".tsx"],
+		lineCommentTokens: ["//"],
+		blockCommentPairs: [{ start: "/*", end: "*/" }],
 	};
 
 	const fakeRepo: GitHubRepo = {
@@ -331,6 +333,7 @@ describe("fetchRandomCode", () => {
 
 		expect(result.ok).toBe(true);
 		if (result.ok) {
+			expect(result.data.languageId).toBe("typescript");
 			expect(result.data.language).toBe("TypeScript");
 			expect(result.data.title).toContain("owner/repo");
 			expect(result.data.code).toBe("const x = 1;");

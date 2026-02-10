@@ -277,6 +277,7 @@ export async function fetchRandomCode(
 			ok: true,
 			data: {
 				id: `github-${repo.full_name}-${file.path}`,
+				languageId: language.id,
 				language: language.name,
 				title: `${file.path} from ${repo.full_name}`,
 				code: sanitized,

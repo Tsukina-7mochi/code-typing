@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import type { Language } from "../data/languages";
 
 export interface TypingResult {
 	readonly elapsedTime: number;
@@ -16,13 +17,11 @@ interface TypingState {
 	readonly totalKeystrokes: number;
 }
 
-const initialState: TypingState = {
-	currentIndex: 0,
-	errorInput: "",
-	startTime: null,
-	endTime: null,
-	backspaceCount: 0,
-	totalKeystrokes: 0,
+type CommentConfig = Pick<Language, "lineCommentTokens" | "blockCommentPairs">;
+
+const defaultCommentConfig: CommentConfig = {
+	lineCommentTokens: [],
+	blockCommentPairs: [],
 };
 
 function keyToChar(key: string): string {
@@ -46,8 +45,136 @@ function findIndentEnd(code: string, lineStart: number): number {
 	return current;
 }
 
-export function useTypingState(code: string) {
-	const [state, setState] = useState<TypingState>(initialState);
+function findCommentEnd(
+	code: string,
+	index: number,
+	commentConfig: CommentConfig,
+): number | null {
+	for (const token of commentConfig.lineCommentTokens) {
+		if (!code.startsWith(token, index)) continue;
+		const newlineIndex = code.indexOf("\n", index + token.length);
+		return newlineIndex === -1 ? code.length : newlineIndex + 1;
+	}
+
+	for (const pair of commentConfig.blockCommentPairs) {
+		if (!code.startsWith(pair.start, index)) continue;
+		const endIndex = code.indexOf(pair.end, index + pair.start.length);
+		return endIndex === -1 ? code.length : endIndex + pair.end.length;
+	}
+
+	return null;
+}
+
+function findSkippableRegionEnd(
+	code: string,
+	index: number,
+	commentConfig: CommentConfig,
+): number {
+	let current = index;
+	while (current < code.length) {
+		const lineStart = findLineStart(code, current);
+		const indentEnd = findIndentEnd(code, lineStart);
+		if (current >= lineStart && current <= indentEnd && indentEnd > current) {
+			current = indentEnd;
+			continue;
+		}
+
+		const commentEnd = findCommentEnd(code, current, commentConfig);
+		if (commentEnd !== null && commentEnd > current) {
+			current = commentEnd;
+			continue;
+		}
+
+		let possibleCommentStart = current;
+		while (
+			possibleCommentStart < code.length &&
+			(code[possibleCommentStart] === " " ||
+				code[possibleCommentStart] === "\t")
+		) {
+			possibleCommentStart += 1;
+		}
+		if (possibleCommentStart > current && code[possibleCommentStart] !== "\n") {
+			const spacedCommentEnd = findCommentEnd(
+				code,
+				possibleCommentStart,
+				commentConfig,
+			);
+			if (
+				spacedCommentEnd !== null &&
+				spacedCommentEnd > possibleCommentStart
+			) {
+				current = spacedCommentEnd;
+				continue;
+			}
+		}
+
+		break;
+	}
+
+	return current;
+}
+
+function findLeadingCommentsAndBlankLinesEnd(
+	code: string,
+	commentConfig: CommentConfig,
+): number {
+	let current = 0;
+	while (current < code.length) {
+		const lineStart = current;
+		const nonWhitespace = findIndentEnd(code, lineStart);
+		const firstChar = code[nonWhitespace];
+
+		if (firstChar === "\n") {
+			current = nonWhitespace + 1;
+			continue;
+		}
+
+		const commentEnd = findCommentEnd(code, nonWhitespace, commentConfig);
+		if (commentEnd !== null && commentEnd > nonWhitespace) {
+			current = commentEnd;
+			continue;
+		}
+
+		break;
+	}
+
+	return current;
+}
+
+function findSkippedRegionStart(
+	code: string,
+	regionEnd: number,
+	commentConfig: CommentConfig,
+): number | null {
+	for (let start = 0; start < regionEnd; start += 1) {
+		const end = findSkippableRegionEnd(code, start, commentConfig);
+		if (end === regionEnd && end > start) {
+			return start;
+		}
+	}
+
+	return null;
+}
+
+function createInitialState(
+	code: string,
+	commentConfig: CommentConfig,
+): TypingState {
+	return {
+		currentIndex: findLeadingCommentsAndBlankLinesEnd(code, commentConfig),
+		errorInput: "",
+		startTime: null,
+		endTime: null,
+		backspaceCount: 0,
+		totalKeystrokes: 0,
+	};
+}
+
+export function useTypingState(code: string, language?: Language) {
+	const commentConfig = language ?? defaultCommentConfig;
+	const [state, setState] = useState<TypingState>(() =>
+		createInitialState(code, commentConfig),
+	);
 
 	const currentIndex = state.currentIndex;
 	const isComplete = state.currentIndex === code.length;
@@ -79,10 +206,17 @@ export function useTypingState(code: string) {
 
 					if (prev.currentIndex === 0) return prev;
 
-					const lineStart = findLineStart(code, prev.currentIndex);
-					const indentEnd = findIndentEnd(code, lineStart);
-					if (prev.currentIndex > lineStart && prev.currentIndex <= indentEnd) {
-						const targetIndex = lineStart > 0 ? Math.max(lineStart - 1, 0) : 0;
+					const skippedRegionStart = findSkippedRegionStart(
+						code,
+						prev.currentIndex,
+						commentConfig,
+					);
+					if (skippedRegionStart !== null) {
+						const lineStart = findLineStart(code, skippedRegionStart);
+						const targetIndex =
+							skippedRegionStart === lineStart && skippedRegionStart > 0
+								? skippedRegionStart - 1
+								: skippedRegionStart;
 						return {
 							...prev,
 							currentIndex: targetIndex,
@@ -110,14 +244,12 @@ export function useTypingState(code: string) {
 				}
 
 				if (key === "Tab") {
-					const lineStart = findLineStart(code, prev.currentIndex);
-					const indentEnd = findIndentEnd(code, lineStart);
-					const isInIndent =
-						indentEnd > lineStart &&
-						prev.currentIndex >= lineStart &&
-						prev.currentIndex <= indentEnd;
-					if (isInIndent) {
-						const newIndex = indentEnd;
+					const newIndex = findSkippableRegionEnd(
+						code,
+						prev.currentIndex,
+						commentConfig,
+					);
+					if (newIndex > prev.currentIndex) {
 						const isNowComplete = newIndex === code.length;
 						return {
 							...prev,
@@ -131,14 +263,11 @@ export function useTypingState(code: string) {
 
 				const expectedChar = code[prev.currentIndex] ?? "";
 				if (typedChar === expectedChar) {
-					let newIndex = prev.currentIndex + 1;
-					if (typedChar === "\n") {
-						const lineStart = findLineStart(code, newIndex);
-						const indentEnd = findIndentEnd(code, lineStart);
-						if (indentEnd > newIndex) {
-							newIndex = indentEnd;
-						}
-					}
+					const newIndex = findSkippableRegionEnd(
+						code,
+						prev.currentIndex + 1,
+						commentConfig,
+					);
 					const isNowComplete = newIndex === code.length;
 					return {
 						...prev,
@@ -157,7 +286,7 @@ export function useTypingState(code: string) {
 				};
 			});
 		},
-		[code],
+		[code, commentConfig],
 	);
 
 	return {

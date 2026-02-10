@@ -1,6 +1,25 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import type { Language } from "../data/languages";
 import { useTypingState } from "./useTypingState";
+
+const tsLanguage: Language = {
+	id: "typescript",
+	name: "TypeScript",
+	githubQuery: "typescript",
+	extensions: [".ts", ".tsx"],
+	lineCommentTokens: ["//"],
+	blockCommentPairs: [{ start: "/*", end: "*/" }],
+};
+
+function typeText(
+	result: { current: { handleKey: (key: string) => void } },
+	text: string,
+) {
+	for (const char of text) {
+		act(() => result.current.handleKey(char));
+	}
+}
 
 describe("useTypingState", () => {
 	it("starts with empty state", () => {
@@ -159,5 +178,53 @@ describe("useTypingState", () => {
 		expect(result.current.result).toBeNull();
 		act(() => result.current.handleKey("b"));
 		expect(result.current.result?.totalKeystrokes).toBe(3);
+	});
+
+	it("skips comments and blank lines at file start", () => {
+		const code = "// leading\n\n/* block */\n\nconst x = 1;";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		expect(result.current.currentIndex).toBe(code.indexOf("const"));
+	});
+
+	it("auto-skips trailing inline comments", () => {
+		const code = "const x = 1; // trailing\nnext";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		typeText(result, "const x = 1;");
+		expect(result.current.currentIndex).toBe(code.indexOf("next"));
+	});
+
+	it("auto-skips comment lines after Enter", () => {
+		const code = "if (x) {\n    // comment\n    return 1;\n}";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		typeText(result, "if (x) {");
+		act(() => result.current.handleKey("Enter"));
+		expect(result.current.currentIndex).toBe(code.indexOf("return"));
+	});
+
+	it("Tab skips comment region from comment start", () => {
+		const code = "x // note\ny";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		typeText(result, "x");
+		act(() => result.current.handleKey("Backspace"));
+		expect(result.current.currentIndex).toBe(code.indexOf(" //"));
+		act(() => result.current.handleKey("Tab"));
+		expect(result.current.currentIndex).toBe(code.indexOf("y"));
+	});
+
+	it("Backspace skips trailing inline comment region", () => {
+		const code = "x // note\ny";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		typeText(result, "x");
+		expect(result.current.currentIndex).toBe(code.indexOf("y"));
+		act(() => result.current.handleKey("Backspace"));
+		expect(result.current.currentIndex).toBe(code.indexOf(" //"));
+	});
+
+	it("auto-skipped comments do not add keystrokes", () => {
+		const code = "x // comment\ny";
+		const { result } = renderHook(() => useTypingState(code, tsLanguage));
+		typeText(result, "x");
+		act(() => result.current.handleKey("y"));
+		expect(result.current.result?.totalKeystrokes).toBe(2);
 	});
 });

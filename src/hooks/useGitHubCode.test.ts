@@ -16,6 +16,8 @@ const language: Language = {
 	name: "Go",
 	githubQuery: "go",
 	extensions: [".go"],
+	lineCommentTokens: ["//"],
+	blockCommentPairs: [{ start: "/*", end: "*/" }],
 };
 
 describe("useGitHubCode", () => {
@@ -40,6 +42,7 @@ describe("useGitHubCode", () => {
 	it("transitions to success on successful fetch", async () => {
 		const sample = {
 			id: "github-test",
+			languageId: "go",
 			language: "Go",
 			title: "main.go from test/repo",
 			code: "package main",
@@ -81,6 +84,7 @@ describe("useGitHubCode", () => {
 	it("resets to idle state", async () => {
 		const sample = {
 			id: "github-test",
+			languageId: "go",
 			language: "Go",
 			title: "main.go",
 			code: "package main",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { languages, matchesExtension } from "./languages";
+import { findLanguageById, languages, matchesExtension } from "./languages";
 
 describe("languages", () => {
 	it("has unique ids", () => {
@@ -11,6 +11,33 @@ describe("languages", () => {
 		for (const lang of languages) {
 			expect(lang.extensions.length).toBeGreaterThanOrEqual(1);
 		}
+	});
+
+	it("each language has comment configuration", () => {
+		for (const lang of languages) {
+			expect(
+				lang.lineCommentTokens.length + lang.blockCommentPairs.length,
+			).toBeGreaterThanOrEqual(1);
+		}
+	});
+
+	it("block comment pairs have non-empty start and end tokens", () => {
+		for (const lang of languages) {
+			for (const pair of lang.blockCommentPairs) {
+				expect(pair.start.length).toBeGreaterThan(0);
+				expect(pair.end.length).toBeGreaterThan(0);
+			}
+		}
+	});
+});
+
+describe("findLanguageById", () => {
+	it("returns a language for known id", () => {
+		expect(findLanguageById("typescript")?.name).toBe("TypeScript");
+	});
+
+	it("returns null for unknown id", () => {
+		expect(findLanguageById("unknown")).toBeNull();
 	});
 });
 
