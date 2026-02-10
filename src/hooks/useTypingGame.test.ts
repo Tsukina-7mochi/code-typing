@@ -149,6 +149,13 @@ describe("useTypingGame", () => {
 		expect(result.current.currentIndex).toBe(2);
 	});
 
+	it("auto-indents after Enter", () => {
+		const { result } = renderHook(() => useTypingGame("a\n    b"));
+		pressKey("a");
+		pressKey("Enter");
+		expect(result.current.currentIndex).toBe("a\n    ".length);
+	});
+
 	it("cleans up keydown listener on unmount", () => {
 		const removeSpy = vi.spyOn(window, "removeEventListener");
 		const { unmount } = renderHook(() => useTypingGame("abc"));

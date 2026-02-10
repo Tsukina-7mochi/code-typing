@@ -31,6 +31,21 @@ function keyToChar(key: string): string {
 	return key;
 }
 
+function findLineStart(code: string, index: number): number {
+	const lastNewline = code.lastIndexOf("\n", Math.max(index - 1, 0));
+	return lastNewline === -1 ? 0 : lastNewline + 1;
+}
+
+function findIndentEnd(code: string, lineStart: number): number {
+	let current = lineStart;
+	while (current < code.length) {
+		const char = code[current];
+		if (char !== " " && char !== "\t") break;
+		current += 1;
+	}
+	return current;
+}
+
 export function useTypingState(code: string) {
 	const [state, setState] = useState<TypingState>(initialState);
 
@@ -64,6 +79,17 @@ export function useTypingState(code: string) {
 
 					if (prev.currentIndex === 0) return prev;
 
+					const lineStart = findLineStart(code, prev.currentIndex);
+					const indentEnd = findIndentEnd(code, lineStart);
+					if (prev.currentIndex > lineStart && prev.currentIndex <= indentEnd) {
+						const targetIndex = lineStart > 0 ? Math.max(lineStart - 1, 0) : 0;
+						return {
+							...prev,
+							currentIndex: targetIndex,
+							backspaceCount: prev.backspaceCount + 1,
+						};
+					}
+
 					return {
 						...prev,
 						currentIndex: prev.currentIndex - 1,
@@ -83,9 +109,36 @@ export function useTypingState(code: string) {
 					};
 				}
 
+				if (key === "Tab") {
+					const lineStart = findLineStart(code, prev.currentIndex);
+					const indentEnd = findIndentEnd(code, lineStart);
+					const isInIndent =
+						indentEnd > lineStart &&
+						prev.currentIndex >= lineStart &&
+						prev.currentIndex <= indentEnd;
+					if (isInIndent) {
+						const newIndex = indentEnd;
+						const isNowComplete = newIndex === code.length;
+						return {
+							...prev,
+							currentIndex: newIndex,
+							startTime: prev.startTime ?? now,
+							endTime: isNowComplete ? now : prev.endTime,
+							totalKeystrokes: prev.totalKeystrokes + 1,
+						};
+					}
+				}
+
 				const expectedChar = code[prev.currentIndex] ?? "";
 				if (typedChar === expectedChar) {
-					const newIndex = prev.currentIndex + 1;
+					let newIndex = prev.currentIndex + 1;
+					if (typedChar === "\n") {
+						const lineStart = findLineStart(code, newIndex);
+						const indentEnd = findIndentEnd(code, lineStart);
+						if (indentEnd > newIndex) {
+							newIndex = indentEnd;
+						}
+					}
 					const isNowComplete = newIndex === code.length;
 					return {
 						...prev,

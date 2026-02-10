@@ -130,4 +130,34 @@ describe("useTypingState", () => {
 		expect(result.current.currentIndex).toBe(1);
 		vi.restoreAllMocks();
 	});
+
+	it("auto-indents after Enter", () => {
+		const { result } = renderHook(() => useTypingState("a\n    b"));
+		act(() => result.current.handleKey("a"));
+		act(() => result.current.handleKey("Enter"));
+		expect(result.current.currentIndex).toBe("a\n    ".length);
+	});
+
+	it("Tab skips leading indentation", () => {
+		const { result } = renderHook(() => useTypingState("    a"));
+		act(() => result.current.handleKey("Tab"));
+		expect(result.current.currentIndex).toBe(4);
+	});
+
+	it("Backspace skips leading indentation", () => {
+		const { result } = renderHook(() => useTypingState("a\n    b"));
+		act(() => result.current.handleKey("a"));
+		act(() => result.current.handleKey("Enter"));
+		act(() => result.current.handleKey("Backspace"));
+		expect(result.current.currentIndex).toBe(1);
+	});
+
+	it("auto-skipped indentation does not add keystrokes", () => {
+		const { result } = renderHook(() => useTypingState("a\n    b"));
+		act(() => result.current.handleKey("a"));
+		act(() => result.current.handleKey("Enter"));
+		expect(result.current.result).toBeNull();
+		act(() => result.current.handleKey("b"));
+		expect(result.current.result?.totalKeystrokes).toBe(3);
+	});
 });
