@@ -2,3 +2,9 @@ pre-commit:
   parallel: true
   jobs:
     - run: pnpm check
+
+pre-push:
+  parallel: true
+  jobs:
+    - run: pnpm check
+    - run: pnpm test
