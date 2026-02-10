@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { CodeSample } from "../data/codes";
 import { type TypingResult, useTypingGame } from "../hooks/useTypingGame";
+import { ErrorInput } from "./ErrorInput";
 
 interface TypingGameProps {
 	readonly sample: CodeSample;
@@ -48,9 +49,7 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 			>
 				<pre className="font-mono text-lg leading-relaxed whitespace-pre-wrap break-all">
 					<span className="text-white">{correctText}</span>
-					{errorInput.length > 0 ? (
-						<span className="text-red-400 bg-red-900/30">{errorInput}</span>
-					) : null}
+					<ErrorInput errorInput={errorInput} />
 					{!isComplete ? (
 						<span
 							ref={cursorRef}
