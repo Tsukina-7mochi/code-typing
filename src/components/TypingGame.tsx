@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { CodeSample } from "../data/codes";
-import { type TypingResult, useTypingGame } from "../hooks/useTypingGame";
+import { useKeyboardHandler } from "../hooks/useKeyboardHandler";
+import { type TypingResult, useTypingState } from "../hooks/useTypingState";
 import { ErrorInput } from "./ErrorInput";
 
 interface TypingGameProps {
@@ -9,9 +10,10 @@ interface TypingGameProps {
 }
 
 export function TypingGame({ sample, onComplete }: TypingGameProps) {
-	const { errorInput, currentIndex, isComplete, result } = useTypingGame(
-		sample.code,
-	);
+	const { errorInput, currentIndex, isComplete, result, handleKey } =
+		useTypingState(sample.code);
+	useKeyboardHandler(handleKey);
+
 	const cursorRef = useRef<HTMLSpanElement>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const completedRef = useRef(false);

@@ -3,7 +3,7 @@ import { CodeSelect } from "./components/CodeSelect";
 import { Result } from "./components/Result";
 import { TypingGame } from "./components/TypingGame";
 import { type CodeSample, codeSamples } from "./data/codes";
-import type { TypingResult } from "./hooks/useTypingGame";
+import type { TypingResult } from "./hooks/useTypingState";
 
 type Screen =
 	| { readonly type: "select" }

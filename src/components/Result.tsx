@@ -1,4 +1,4 @@
-import type { TypingResult } from "../hooks/useTypingGame";
+import type { TypingResult } from "../hooks/useTypingState";
 import { Stat } from "./Stat";
 
 interface ResultProps {
