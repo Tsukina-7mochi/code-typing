@@ -10,12 +10,12 @@ export function ErrorInput({ errorInput }: ErrorInputProps) {
 	}
 
 	const renderedErrorInput = Array.from(
-		errorInput.matchAll(/[\s\S]/g),
+		errorInput.matchAll(/[^\n]+|\n/g),
 		(match) => {
-			const char = match[0];
+			const segment = match[0];
 			const position = match.index ?? 0;
 
-			if (char === "\n") {
+			if (segment === "\n") {
 				return (
 					<span key={`error-newline-${position}`}>
 						<CornerDownLeft
@@ -28,7 +28,7 @@ export function ErrorInput({ errorInput }: ErrorInputProps) {
 				);
 			}
 
-			return <span key={`error-char-${position}`}>{char}</span>;
+			return <span key={`error-text-${position}`}>{segment}</span>;
 		},
 	);
 
