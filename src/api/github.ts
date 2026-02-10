@@ -60,10 +60,7 @@ const JSON_HEADERS = {
 	"X-GitHub-Api-Version": "2022-11-28",
 };
 
-const RAW_HEADERS = {
-	Accept: "application/vnd.github.raw+json",
-	"X-GitHub-Api-Version": "2022-11-28",
-};
+const RAW_BASE = "https://raw.githubusercontent.com";
 
 // --- Helpers ---
 
@@ -160,14 +157,14 @@ export async function getRepoTree(
 export async function getFileContent(
 	owner: string,
 	repo: string,
+	branch: string,
 	path: string,
 ): Promise<GitHubResult<string>> {
 	return handleResponse(
 		() => {
 			const encodedPath = path.split("/").map(encodeURIComponent).join("/");
 			return fetch(
-				`${GITHUB_API}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodedPath}`,
-				{ headers: RAW_HEADERS },
+				`${RAW_BASE}/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(branch)}/${encodedPath}`,
 			);
 		},
 		(res) => res.text(),
@@ -266,6 +263,7 @@ export async function fetchRandomCode(
 		const contentResult = await getFileContent(
 			repo.owner.login,
 			repo.name,
+			repo.default_branch,
 			file.path,
 		);
 		if (!contentResult.ok) continue;

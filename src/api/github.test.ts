@@ -129,21 +129,23 @@ describe("getFileContent", () => {
 			mockFetch({ text: 'fn main() { println!("hello"); }' }),
 		);
 
-		const result = await getFileContent("owner", "repo", "src/main.rs");
+		const result = await getFileContent("owner", "repo", "main", "src/main.rs");
 
 		expect(result).toEqual({
 			ok: true,
 			data: 'fn main() { println!("hello"); }',
 		});
-		const headers = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][1]
-			.headers;
-		expect(headers.Accept).toBe("application/vnd.github.raw+json");
+		const url = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+		expect(url).toContain("raw.githubusercontent.com");
+		expect(url).toContain("owner");
+		expect(url).toContain("repo");
+		expect(url).toContain("main");
 	});
 
 	it("returns error on failure", async () => {
 		vi.stubGlobal("fetch", mockFetch({ status: 404 }));
 
-		const result = await getFileContent("owner", "repo", "missing.ts");
+		const result = await getFileContent("owner", "repo", "main", "missing.ts");
 
 		expect(result.ok).toBe(false);
 	});
