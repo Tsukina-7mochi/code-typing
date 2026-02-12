@@ -46,7 +46,8 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 
 	return (
 		<div className="flex min-h-screen w-full flex-col items-center justify-center p-8">
-			<div className="mb-4 text-sm text-zen-text-muted">{sample.language}</div>
+			<div className="mb-2 text-sm text-zen-text-muted">{sample.language}</div>
+			<div className="mb-4 text-xs text-zen-text-faint">{sample.title}</div>
 			<div
 				ref={containerRef}
 				className="relative max-h-[70vh] min-w-[80ch] max-w-[120ch] overflow-y-auto rounded-md bg-zen-surface p-6"
