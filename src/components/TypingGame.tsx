@@ -3,6 +3,7 @@ import type { CodeSample } from "../data/codes";
 import { findLanguageById } from "../data/languages";
 import { useKeyboardHandler } from "../hooks/useKeyboardHandler";
 import { type TypingResult, useTypingState } from "../hooks/useTypingState";
+import { Cursor } from "./Cursor";
 import { ErrorInput } from "./ErrorInput";
 
 interface TypingGameProps {
@@ -55,12 +56,7 @@ export function TypingGame({ sample, onComplete }: TypingGameProps) {
 				<pre className="font-code text-lg leading-relaxed whitespace-pre-wrap break-all">
 					<span className="text-zen-text">{correctText}</span>
 					<ErrorInput errorInput={errorInput} />
-					{!isComplete ? (
-						<span
-							ref={cursorRef}
-							className="animate-blink border-l-2 border-zen-accent"
-						/>
-					) : null}
+					{!isComplete ? <Cursor ref={cursorRef} /> : null}
 					<span className="text-zen-text-faint">{remainingText}</span>
 				</pre>
 			</div>
